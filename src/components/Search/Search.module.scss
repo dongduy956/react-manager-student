@@ -1,0 +1,13 @@
+$border-radius-search: 6px;
+.search {
+    button {
+        display: flex;
+        align-items: center;
+        border-bottom-right-radius: $border-radius-search !important;
+        border-top-right-radius: $border-radius-search !important;
+    }
+    input {
+        border-bottom-left-radius: $border-radius-search;
+        border-top-left-radius: $border-radius-search;
+    }
+}

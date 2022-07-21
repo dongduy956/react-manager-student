@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import routes from '~/routes';
+import { ProviderStore } from './store';
 import MainLayout from './layouts';
 function App() {
     return (
@@ -16,9 +17,11 @@ function App() {
                             key={index}
                             path={route.path}
                             element={
-                                <Layout addRoute={route.addRoute}>
-                                    <Page  />
-                                </Layout>
+                                <ProviderStore addRoute={route.addRoute} title={route.title}>
+                                    <Layout>
+                                        <Page />
+                                    </Layout>
+                                </ProviderStore>
                             }
                         />
                     );

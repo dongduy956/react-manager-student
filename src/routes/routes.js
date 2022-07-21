@@ -1,57 +1,88 @@
-import configRoute from '~/config';
-import Class, { AddClass } from '~/pages/Class';
-import Point, { AddPoint } from '~/pages/Point';
-import Student, { AddStudent } from '~/pages/Student';
-import Subject, { AddSubject } from '~/pages/Subject';
-import Teacher, { AddTeacher } from '~/pages/Teacher';
+import { configRoutes, configTitles } from '~/config';
+import Class, { AddClass, UpdateClass } from '~/pages/Class';
+import Point, { AddPoint, UpdatePoint } from '~/pages/Point';
+import Student, { AddStudent, UpdateStudent } from '~/pages/Student';
+import Subject, { AddSubject, UpdateSubject } from '~/pages/Subject';
+import Teacher, { AddTeacher, UpdateTeacher } from '~/pages/Teacher';
 
 export const publicRoutes = [
     {
-        path: configRoute.routes.point,
+        path: configRoutes.routes.point,
         component: Point,
-        addRoute: configRoute.routes.addPoint,
+        addRoute: configRoutes.routes.addPoint,
     },
     {
-        path: configRoute.routes.teacher,
+        path: configRoutes.routes.teacher,
         component: Teacher,
-        addRoute: configRoute.routes.addTeacher,
+        addRoute: configRoutes.routes.addTeacher,
     },
 
     {
-        path: configRoute.routes.student,
+        path: configRoutes.routes.student,
         component: Student,
-        addRoute: configRoute.routes.addStudent,
+        addRoute: configRoutes.routes.addStudent,
     },
     {
-        path: configRoute.routes.subject,
-
+        path: configRoutes.routes.subject,
         component: Subject,
-        addRoute: configRoute.routes.addSubject,
+        addRoute: configRoutes.routes.addSubject,
     },
     {
-        path: configRoute.routes.class,
+        path: configRoutes.routes.class,
         component: Class,
-        addRoute: configRoute.routes.addClass,
+        addRoute: configRoutes.routes.addClass,
     },
+    //add
     {
-        path: configRoute.routes.addPoint,
+        path: configRoutes.routes.addPoint,
         component: AddPoint,
+        title: configTitles.title.addPoint,
     },
     {
-        path: configRoute.routes.addTeacher,
+        path: configRoutes.routes.addTeacher,
         component: AddTeacher,
+        title: configTitles.title.addTeacher,
     },
     {
-        path: configRoute.routes.addStudent,
+        path: configRoutes.routes.addStudent,
         component: AddStudent,
+        title: configTitles.title.addStudent,
     },
     {
-        path: configRoute.routes.addSubject,
+        path: configRoutes.routes.addSubject,
         component: AddSubject,
+        title: configTitles.title.addSubject,
     },
     {
-        path: configRoute.routes.addClass,
+        path: configRoutes.routes.addClass,
         component: AddClass,
+        title: configTitles.title.addClass,
+    },
+    //update
+    {
+        path: configRoutes.routes.updatePoint,
+        component: UpdatePoint,
+        title: configTitles.title.updatePoint,
+    },
+    {
+        path: configRoutes.routes.updateTeacher,
+        component: UpdateTeacher,
+        title: configTitles.title.updateTeacher,
+    },
+    {
+        path: configRoutes.routes.updateStudent,
+        component: UpdateStudent,
+        title: configTitles.title.updateStudent,
+    },
+    {
+        path: configRoutes.routes.updateSubject,
+        component: UpdateSubject,
+        title: configTitles.title.updateSubject,
+    },
+    {
+        path: configRoutes.routes.updateClass,
+        component: UpdateClass,
+        title: configTitles.title.updateClass,
     },
 ];
 export const privateRoutes = [];

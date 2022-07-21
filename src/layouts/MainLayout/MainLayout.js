@@ -1,20 +1,25 @@
 import { FileAddTwoTone } from '@ant-design/icons';
-import { Breadcrumb, Button, Input, Layout } from 'antd';
+import { Breadcrumb, Button, Layout } from 'antd';
+import className from 'classnames/bind';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Footer, Header, Sider } from '~/layouts/components';
+import { useStore } from '~/store';
+import Search from '~/components/Search';
 import './MainLayout.css';
+import styles from './MainLayout.module.scss';
+
+const cx = className.bind(styles);
 
 const { Content } = Layout;
-const { Search } = Input;
 
-const MainLayout = ({ addRoute = '', children }) => {
+const MainLayout = ({ children }) => {
+    const { addRoute, title } = useStore();
+
     const [breakpoint, setBreakpoint] = useState(true);
     const handleChangeBreakpoint = (broken) => setBreakpoint(broken);
-    const onSearch = (value) => console.log(value);
-
     return (
         <Layout
             style={{
@@ -38,15 +43,13 @@ const MainLayout = ({ addRoute = '', children }) => {
                         )}
                         {addRoute && (
                             <>
-                                <Search
-                                    className="md:ml-0 md:mr-0 mr-5 ml-5 md:basis-2/6 basis-full"
-                                    placeholder="input search text"
-                                    onSearch={onSearch}
-                                    enterButton
-                                />
+                                <Search />
                                 <Link to={addRoute}>
                                     <Button
-                                        className="flex justify-center items-center md:mt-0 mt-2 md:ml-0 ml-5 md:mr-0 mr-5"
+                                        className={
+                                            'flex justify-center items-center md:mt-0 mt-2 md:ml-0 ml-5 md:mr-0 mr-5 ' +
+                                            cx('button-add')
+                                        }
                                         type="primary"
                                         icon={<FileAddTwoTone />}
                                     >
@@ -55,6 +58,7 @@ const MainLayout = ({ addRoute = '', children }) => {
                                 </Link>
                             </>
                         )}
+                        {title && <h3 className="flex-1 text-center text-cyan-700 text-4xl uppercase leading-10">{title}</h3>}
                     </div>
                     <div
                         className="site-layout-background"

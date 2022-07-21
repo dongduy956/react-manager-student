@@ -6,7 +6,7 @@ import className from 'classnames/bind';
 import * as ClassService from '~/services/ClassService';
 import { configRoutes } from '~/config';
 import styles from './Class.module.scss';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const cx = className.bind(styles);
 
@@ -31,14 +31,15 @@ const tailFormItemLayout = {
     },
 };
 
-const Add = () => {
+const Update = () => {
+    const { state } = useLocation();
     const history = useNavigate();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const fetchData = async (params) => {
         try {
             setLoading(true);
-            const res = await ClassService.post(params);
+            const res = await ClassService.put(state.id, params);
             if (!res.error) history(configRoutes.routes.class);
             else
                 notification.error({
@@ -50,7 +51,7 @@ const Add = () => {
             setLoading(false);
             notification.success({
                 message: 'Success',
-                description: 'Add success',
+                description: 'Update success',
                 duration: 3,
             });
         } catch ({ response }) {
@@ -69,6 +70,7 @@ const Add = () => {
         <Spin spinning={loading} tip="Loading...">
             <Form {...formItemLayout} form={form} name="add-class" onFinish={onFinish} scrollToFirstError>
                 <Form.Item
+                   initialValue={state.name}
                     name="name"
                     label="Name"
                     rules={[
@@ -78,7 +80,7 @@ const Add = () => {
                         },
                     ]}
                 >
-                    <Input />
+                    <Input defaultValue={state.name}/>
                 </Form.Item>
                 <Form.Item {...tailFormItemLayout}>
                     <Link to={configRoutes.routes.class}>
@@ -92,7 +94,7 @@ const Add = () => {
                         type="primary"
                         htmlType="submit"
                     >
-                        Add class
+                        Update class
                     </Button>
                 </Form.Item>
             </Form>
@@ -100,4 +102,4 @@ const Add = () => {
     );
 };
 
-export default Add;
+export default Update;

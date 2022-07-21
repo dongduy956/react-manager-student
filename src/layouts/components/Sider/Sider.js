@@ -1,8 +1,9 @@
-import { useState } from 'react';
 import { DesktopOutlined, FileOutlined, PieChartOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import configRoutes from '~/config';
+import { configRoutes } from '~/config';
+import { setSearchText, useStore } from '~/store';
 
 const { Sider } = Layout;
 
@@ -22,9 +23,12 @@ const items = [
     getItem(<Link to={configRoutes.routes.teacher}>Teacher</Link>, '5', <FileOutlined />),
 ];
 function SiderCB({ onChangeBreakpoint }) {
+    const { reduce } = useStore();
     const [collapsed, setCollapsed] = useState(false);
     const [collapsedWidth, setCollapsedWidth] = useState(80);
     const [selectedKeys, setSelectedKeys] = useState(['1']);
+    const [broken, setBroken] = useState(false);
+
     return (
         <Sider
             collapsible
@@ -34,6 +38,7 @@ function SiderCB({ onChangeBreakpoint }) {
             onBreakpoint={(broken) => {
                 broken ? setCollapsedWidth(0) : setCollapsedWidth(80);
                 onChangeBreakpoint(!broken);
+                setBroken(broken);
             }}
             onCollapse={(value) => setCollapsed(value)}
             defaultCollapsed
@@ -55,7 +60,11 @@ function SiderCB({ onChangeBreakpoint }) {
                 mode="inline"
                 items={items}
                 selectedKeys={selectedKeys}
-                onSelect={(item) => setSelectedKeys([item.key])}
+                onSelect={(item) => {
+                    setSelectedKeys([item.key]);
+                    if (broken) setCollapsed(true);
+                    reduce[1](setSearchText(''));
+                }}
             />
         </Sider>
     );
