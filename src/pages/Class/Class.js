@@ -4,7 +4,7 @@ import { Popconfirm, Table, Tooltip, notification } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
 import { useStore } from '~/store';
-import * as ClassService from '~/services/ClassService';
+import { ClassService } from '~/services';
 import { useDebounce } from '~/hooks';
 import { configRoutes } from '~/config';
 
@@ -38,8 +38,12 @@ const Class = () => {
                                 </button>
                             </Tooltip>
                         </Popconfirm>
-                        <Tooltip className='ml-5' placement="bottom" title={'Update ' + record.name} color="cyan">
-                            <Link state={record} to={configRoutes.contains.updateClass+record.alias} className="hover:text-cyan-500" >
+                        <Tooltip className="ml-5" placement="bottom" title={'Update ' + record.name} color="cyan">
+                            <Link
+                                state={record}
+                                to={configRoutes.contains.updateClass + record.alias}
+                                className="hover:text-cyan-500"
+                            >
                                 <EditOutlined />
                             </Link>
                         </Tooltip>
@@ -70,7 +74,7 @@ const Class = () => {
                     );
                 else res = await ClassService.get(params.pagination.current, params.pagination.pageSize);
                 setLoading(false);
-                setData(res.data.map((item, index) => ({ ...item, key: index })));
+                setData(res.data.map((item) => ({ ...item, key: item.id })));
                 setPagination({
                     ...params.pagination,
                     total: res.totalItems,

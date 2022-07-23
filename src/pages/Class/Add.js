@@ -3,7 +3,7 @@ import { ArrowLeftOutlined, FileAddTwoTone } from '@ant-design/icons';
 import { Button, Form, Input, Spin, notification } from 'antd';
 import className from 'classnames/bind';
 
-import * as ClassService from '~/services/ClassService';
+import { ClassService } from '~/services';
 import { configRoutes } from '~/config';
 import styles from './Class.module.scss';
 import { Link, useNavigate } from 'react-router-dom';

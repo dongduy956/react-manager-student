@@ -1,66 +1,158 @@
-import { Table } from 'antd';
 import { useEffect, useState } from 'react';
-const columns = [
-    {
-        title: 'Name',
-        dataIndex: 'name',
-        sorter: true,
-        render: (name) => `${name.first} ${name.last}`,
-        width: '20%',
-    },
-    {
-        title: 'Gender',
-        dataIndex: 'gender',
-        // filters: [
-        //     {
-        //         text: 'Male',
-        //         value: 'male',
-        //     },
-        //     {
-        //         text: 'Female',
-        //         value: 'female',
-        //     },
-        // ],
-        width: '20%',
-    },
-    {
-        title: 'Email',
-        dataIndex: 'email',
-    },
-];
+import { Link } from 'react-router-dom';
+import { Popconfirm, Table, Tooltip, notification } from 'antd';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
+import { useStore } from '~/store';
+import { PointService, StudentService, SubjectService } from '~/services';
+import { useDebounce } from '~/hooks';
+import { configRoutes } from '~/config';
 
-
-const Point = () => {
+const Student = () => {
+    const columns = [
+        {
+            title: 'Student',
+            dataIndex: 'student',
+            sorter: {
+                compare: (a, b) => a.student.localeCompare(b.student),
+            },
+        },
+        {
+            title: 'Subject',
+            dataIndex: 'subject',
+            sorter: {
+                compare: (a, b) => a.subject.localeCompare(b.subject),
+            },
+        },
+        {
+            title: 'Number Of Times',
+            dataIndex: 'numberOfTimes',
+            sorter: {
+                compare: (a, b) => a.id - b.id,
+            },
+        },
+        {
+            title: 'Points',
+            dataIndex: 'points',
+        },
+        {
+            title: 'Operation',
+            dataIndex: 'operation',
+            render: (_, record) =>
+                data.length >= 1 ? (
+                    <>
+                        <Popconfirm
+                            title="Sure to delete?"
+                            onConfirm={() => handleDelete(record.idStudent, record.idSubject, record.numberOfTimes)}
+                        >
+                            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                            <Tooltip placement="bottom" title={'Delete ' + record.name} color="red">
+                                <button className="hover:text-rose-800">
+                                    <DeleteOutlined />
+                                </button>
+                            </Tooltip>
+                        </Popconfirm>
+                        <Tooltip className="ml-5" placement="bottom" title={'Update ' + record.name} color="cyan">
+                            <Link
+                                state={record}
+                                to={configRoutes.contains.updatePoint + record.alias}
+                                className="hover:text-cyan-500"
+                            >
+                                <EditOutlined />
+                            </Link>
+                        </Tooltip>
+                    </>
+                ) : null,
+        },
+    ];
+    const { reduce } = useStore();
+    const [state] = reduce;
+    const debounced = useDebounce(state.searchText, 500);
     const [data, setData] = useState();
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({
         current: 1,
-        pageSize: 1,
+        pageSize: 5,
     });
 
     const fetchData = (params = {}) => {
         setLoading(true);
-        fetch(`https://randomuser.me/api?`)
-            .then((res) => res.json())
-            .then(({ results }) => {
-                setData(results);
+        (async () => {
+            try {
+                let res;
+                if (params.searchText)
+                    res = await PointService.search(
+                        params.searchText,
+                        params.pagination.current,
+                        params.pagination.pageSize,
+                    );
+                else res = await PointService.get(params.pagination.current, params.pagination.pageSize);
+                const newData = await (async () => {
+                    const data = [];
+                    for (var item of res.data) {
+                        const resStudent = await StudentService.getByID(item.idStudent);
+                        const resSubject = await SubjectService.getByID(item.idSubject);
+                        data.push({
+                            ...item,
+                            key: `${item.idStudent}-${item.idSubject}-${item.numberOfTimes}`,
+                            student: resStudent.name,
+                            subject: resSubject.name,
+                        });
+                    }
+                    return data;
+                })();
                 setLoading(false);
+                setData(newData);
                 setPagination({
                     ...params.pagination,
-                    total: 200, // 200 is mock data, you should read it from server
-                    // total: data.totalCount,
+                    total: res.totalItems,
                 });
-            });
+                if (params.delete)
+                    notification.success({
+                        message: 'Success',
+                        description: 'Delete success.',
+                        duration: 3,
+                    });
+            } catch (error) {
+                console.log(error);
+                setLoading(false);
+            }
+        })();
     };
-
+    const handleDelete = (idStudent, idSubject, numberOfTimes) => {
+        (async () => {
+            try {
+                setLoading(true);
+                await PointService.del(idStudent, idSubject, numberOfTimes);
+                setLoading(false);
+                fetchData({
+                    pagination,
+                    delete: true,
+                    searchText: debounced,
+                });
+            } catch ({ response }) {
+                setLoading(false);
+                notification.error({
+                    message: 'Error',
+                    description: response.data.error,
+                    duration: 3,
+                });
+            }
+        })();
+    };
     useEffect(() => {
         fetchData({
             pagination,
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
+    useEffect(() => {
+        fetchData({
+            pagination,
+            searchText: debounced,
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debounced]);
     const handleTableChange = (newPagination, filters, sorter) => {
         fetchData({
             sortField: sorter.field,
@@ -73,16 +165,15 @@ const Point = () => {
     return (
         <Table
             columns={columns}
-            // rowKey={(record) => record.login.uuid}
             dataSource={data}
             pagination={pagination}
             loading={loading}
             onChange={handleTableChange}
             scroll={{
-                x:true,y:true
-            }}          
+                x: true,
+            }}
         />
     );
 };
 
-export default Point;
+export default Student;

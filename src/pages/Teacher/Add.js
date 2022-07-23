@@ -1,348 +1,226 @@
-import {
-    AutoComplete,
-    Button,
-    Cascader,
-    Checkbox,
-    Col,
-    Form,
-    Input,
-    InputNumber,
-    Row,
-    Select,
-  } from 'antd';
-  import React, { useState } from 'react';
-  const { Option } = Select;
-  const residences = [
-    {
-      value: 'zhejiang',
-      label: 'Zhejiang',
-      children: [
-        {
-          value: 'hangzhou',
-          label: 'Hangzhou',
-          children: [
-            {
-              value: 'xihu',
-              label: 'West Lake',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      value: 'jiangsu',
-      label: 'Jiangsu',
-      children: [
-        {
-          value: 'nanjing',
-          label: 'Nanjing',
-          children: [
-            {
-              value: 'zhonghuamen',
-              label: 'Zhong Hua Men',
-            },
-          ],
-        },
-      ],
-    },
-  ];
-  const formItemLayout = {
+import React, { useEffect, useState } from 'react';
+import moment from 'moment';
+import { ArrowLeftOutlined, FileAddTwoTone, InboxOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Spin, notification, Select, DatePicker, message, Upload } from 'antd';
+import className from 'classnames/bind';
+
+import { RoleService, UploadService, TeacherService } from '~/services';
+import { configRoutes } from '~/config';
+import styles from './Teacher.module.scss';
+import { Link, useNavigate } from 'react-router-dom';
+
+const cx = className.bind(styles);
+const { Option } = Select;
+const { Dragger } = Upload;
+const layout = {
     labelCol: {
-      xs: {
-        span: 24,
-      },
-      sm: {
-        span: 8,
-      },
+        span: 6,
     },
+};
+const formItemLayout = {
     wrapperCol: {
-      xs: {
-        span: 24,
-      },
-      sm: {
-        span: 16,
-      },
+        xs: {
+            span: 24,
+        },
+        sm: {
+            span: 16,
+        },
     },
-  };
-  const tailFormItemLayout = {
+};
+const tailFormItemLayout = {
     wrapperCol: {
-      xs: {
         span: 24,
-        offset: 0,
-      },
-      sm: {
-        span: 16,
-        offset: 8,
-      },
     },
-  };
-  
-  const Add = () => {
+};
+
+const Add = () => {
+    const props = {
+        name: 'file',
+        multiple: false,
+        customRequest: async (options) => {
+            const { onSuccess, onError, file, onProgress } = options;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            const config = {
+                headers: { 'content-type': 'multipart/form-data' },
+                onUploadProgress: (event) => {
+                    onProgress({ percent: (event.loaded / event.total) * 100 });
+                },
+            };
+            UploadService.image(formData, config)
+                .then((res) => {
+                    setImageTeacher(res.filename);
+                    onSuccess('Ok');
+                })
+                .catch((err) => {
+                    console.log(err);
+                    onError({ err });
+                });
+        },
+        onChange(info) {
+            const { status } = info.file;
+
+            if (status !== 'uploading') {
+                console.log(info.file, info.fileList);
+            }
+
+            if (status === 'done') {
+                message.success(`${info.file.name} file uploaded successfully.`);
+            } else if (status === 'error') {
+                message.error(`${info.file.name} file upload failed.`);
+            }
+        },
+
+        onDrop(e) {
+            console.log('Dropped files', e.dataTransfer.files);
+        },
+    };
+    const history = useNavigate();
     const [form] = Form.useForm();
-  
-    const onFinish = (values) => {
-      console.log('Received values of form: ', values);
+    const [loading, setLoading] = useState(false);
+    const [dataRole, setDataRole] = useState([]);
+    const [dateOfBirth, setDateOfBirth] = useState();
+    const [imageTeacher, setImageTeacher] = useState('');
+    useEffect(() => {
+        (async () => {
+            const resRole = await RoleService.getSelect();
+            setDataRole(resRole.data);
+        })();
+    }, []);
+    const onChangeDatePicker = (date, dateString) => {
+        setDateOfBirth(date);
     };
-  
-    const prefixSelector = (
-      <Form.Item name="prefix" noStyle>
-        <Select
-          style={{
-            width: 70,
-          }}
-        >
-          <Option value="86">+86</Option>
-          <Option value="87">+87</Option>
-        </Select>
-      </Form.Item>
-    );
-    const suffixSelector = (
-      <Form.Item name="suffix" noStyle>
-        <Select
-          style={{
-            width: 70,
-          }}
-        >
-          <Option value="USD">$</Option>
-          <Option value="CNY">¥</Option>
-        </Select>
-      </Form.Item>
-    );
-    const [autoCompleteResult, setAutoCompleteResult] = useState([]);
-  
-    const onWebsiteChange = (value) => {
-      if (!value) {
-        setAutoCompleteResult([]);
-      } else {
-        setAutoCompleteResult(['.com', '.org', '.net'].map((domain) => `${value}${domain}`));
-      }
+
+    const fetchData = async (params) => {
+        try {
+            setLoading(true);
+            const res = await TeacherService.post(params);
+            if (!res.error) history(configRoutes.routes.teacher);
+            else
+                notification.error({
+                    message: 'Error',
+                    description: res.error,
+                    duration: 3,
+                });
+
+            setLoading(false);
+            notification.success({
+                message: 'Success',
+                description: 'Add success',
+                duration: 3,
+            });
+        } catch ({ response }) {
+            notification.error({
+                message: 'Error',
+                description: response.data.error,
+                duration: 3,
+            });
+
+            setLoading(false);
+        }
     };
-  
-    const websiteOptions = autoCompleteResult.map((website) => ({
-      label: website,
-      value: website,
-    }));
+    const onFinish = (params) => {
+        params.image = imageTeacher;
+        params.dateOfBirth = dateOfBirth.format();
+        
+        fetchData(params);
+    };
+
     return (
-      <Form
-        {...formItemLayout}
-        form={form}
-        name="register"
-        onFinish={onFinish}
-        initialValues={{
-          residence: ['zhejiang', 'hangzhou', 'xihu'],
-          prefix: '86',
-        }}
-        scrollToFirstError
-      >
-        <Form.Item
-          name="email"
-          label="E-mail"
-          rules={[
-            {
-              type: 'email',
-              message: 'The input is not valid E-mail!',
-            },
-            {
-              required: true,
-              message: 'Please input your E-mail!',
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-  
-        <Form.Item
-          name="password"
-          label="Password"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your password!',
-            },
-          ]}
-          hasFeedback
-        >
-          <Input.Password />
-        </Form.Item>
-  
-        <Form.Item
-          name="confirm"
-          label="Confirm Password"
-          dependencies={['password']}
-          hasFeedback
-          rules={[
-            {
-              required: true,
-              message: 'Please confirm your password!',
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('password') === value) {
-                  return Promise.resolve();
-                }
-  
-                return Promise.reject(new Error('The two passwords that you entered do not match!'));
-              },
-            }),
-          ]}
-        >
-          <Input.Password />
-        </Form.Item>
-  
-        <Form.Item
-          name="nickname"
-          label="Nickname"
-          tooltip="What do you want others to call you?"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your nickname!',
-              whitespace: true,
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-  
-        <Form.Item
-          name="residence"
-          label="Habitual Residence"
-          rules={[
-            {
-              type: 'array',
-              required: true,
-              message: 'Please select your habitual residence!',
-            },
-          ]}
-        >
-          <Cascader options={residences} />
-        </Form.Item>
-  
-        <Form.Item
-          name="phone"
-          label="Phone Number"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your phone number!',
-            },
-          ]}
-        >
-          <Input
-            addonBefore={prefixSelector}
-            style={{
-              width: '100%',
-            }}
-          />
-        </Form.Item>
-  
-        <Form.Item
-          name="donation"
-          label="Donation"
-          rules={[
-            {
-              required: true,
-              message: 'Please input donation amount!',
-            },
-          ]}
-        >
-          <InputNumber
-            addonAfter={suffixSelector}
-            style={{
-              width: '100%',
-            }}
-          />
-        </Form.Item>
-  
-        <Form.Item
-          name="website"
-          label="Website"
-          rules={[
-            {
-              required: true,
-              message: 'Please input website!',
-            },
-          ]}
-        >
-          <AutoComplete options={websiteOptions} onChange={onWebsiteChange} placeholder="website">
-            <Input />
-          </AutoComplete>
-        </Form.Item>
-  
-        <Form.Item
-          name="intro"
-          label="Intro"
-          rules={[
-            {
-              required: true,
-              message: 'Please input Intro',
-            },
-          ]}
-        >
-          <Input.TextArea showCount maxLength={100} />
-        </Form.Item>
-  
-        <Form.Item
-          name="gender"
-          label="Gender"
-          rules={[
-            {
-              required: true,
-              message: 'Please select gender!',
-            },
-          ]}
-        >
-          <Select placeholder="select your gender">
-            <Option value="male">Male</Option>
-            <Option value="female">Female</Option>
-            <Option value="other">Other</Option>
-          </Select>
-        </Form.Item>
-  
-        <Form.Item label="Captcha" extra="We must make sure that your are a human.">
-          <Row gutter={8}>
-            <Col span={12}>
-              <Form.Item
-                name="captcha"
-                noStyle
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input the captcha you got!',
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Button>Get captcha</Button>
-            </Col>
-          </Row>
-        </Form.Item>
-  
-        <Form.Item
-          name="agreement"
-          valuePropName="checked"
-          rules={[
-            {
-              validator: (_, value) =>
-                value ? Promise.resolve() : Promise.reject(new Error('Should accept agreement')),
-            },
-          ]}
-          {...tailFormItemLayout}
-        >
-          <Checkbox>
-            I have read the <a href="">agreement</a>
-          </Checkbox>
-        </Form.Item>
-        <Form.Item {...tailFormItemLayout}>
-          <Button type="primary" htmlType="submit">
-            Register
-          </Button>
-        </Form.Item>
-      </Form>
+        <Spin spinning={loading} tip="Loading...">
+            <Form {...layout} {...formItemLayout} form={form} name="add-class" onFinish={onFinish} scrollToFirstError>
+                <Form.Item
+                    name="username"
+                    label="Username"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please input your Username!',
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+                <Form.Item
+                    name="name"
+                    label="Name"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please input your Name!',
+                        },
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+                <Form.Item
+                    initialValue={moment(new Date(), 'dd/MM/yyyy')}
+                    name="dateOfBirth"
+                    label="Date Of Birth"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please select a option Date Of Birth',
+                        },
+                    ]}
+                >
+                    <DatePicker className="w-full" onChange={onChangeDatePicker} />
+                </Form.Item>
+
+                <Form.Item
+                    name="idRole"
+                    label="Role"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please select a option role',
+                        },
+                    ]}
+                >
+                    <Select
+                        placeholder="Select a option and change input text above"
+                        // onChange={this.onGenderChange}
+                        allowClear
+                    >
+                        {dataRole.map((item) => (
+                            <Option key={item.id} value={item.id}>
+                                {item.name}
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+                <Form.Item name="image" label="Image">
+                    <Dragger {...props}>
+                        <p className="ant-upload-drag-icon">
+                            <InboxOutlined />
+                        </p>
+                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                        <p className="ant-upload-hint">
+                            Support for a single or bulk upload. Strictly prohibit from uploading company data or other
+                            band files
+                        </p>
+                    </Dragger>
+                </Form.Item>
+
+                <Form.Item {...tailFormItemLayout}>
+                    <Link to={configRoutes.routes.teacher}>
+                        <Button className={`mr-4 ${cx('btn')}`} icon={<ArrowLeftOutlined />} danger>
+                            Back
+                        </Button>
+                    </Link>
+                    <Button
+                        className={`mt-2 sm:mt-0 ${cx('btn')}`}
+                        icon={<FileAddTwoTone />}
+                        type="primary"
+                        htmlType="submit"
+                    >
+                        Add teacher
+                    </Button>
+                </Form.Item>
+            </Form>
+        </Spin>
     );
-  };
-  
-  export default Add;
+};
+
+export default Add;

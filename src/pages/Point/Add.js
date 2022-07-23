@@ -1,348 +1,172 @@
-import {
-    AutoComplete,
-    Button,
-    Cascader,
-    Checkbox,
-    Col,
-    Form,
-    Input,
-    InputNumber,
-    Row,
-    Select,
-  } from 'antd';
-  import React, { useState } from 'react';
-  const { Option } = Select;
-  const residences = [
-    {
-      value: 'zhejiang',
-      label: 'Zhejiang',
-      children: [
-        {
-          value: 'hangzhou',
-          label: 'Hangzhou',
-          children: [
-            {
-              value: 'xihu',
-              label: 'West Lake',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      value: 'jiangsu',
-      label: 'Jiangsu',
-      children: [
-        {
-          value: 'nanjing',
-          label: 'Nanjing',
-          children: [
-            {
-              value: 'zhonghuamen',
-              label: 'Zhong Hua Men',
-            },
-          ],
-        },
-      ],
-    },
-  ];
-  const formItemLayout = {
+import React, { useEffect, useState } from 'react';
+import { ArrowLeftOutlined, FileAddTwoTone } from '@ant-design/icons';
+import { Button, Form, Input, Spin, notification, Select } from 'antd';
+import className from 'classnames/bind';
+
+import { SubjectService, PointService, StudentService } from '~/services';
+import { configRoutes } from '~/config';
+import styles from './Point.module.scss';
+import { Link, useNavigate } from 'react-router-dom';
+
+const cx = className.bind(styles);
+const { Option } = Select;
+const layout = {
     labelCol: {
-      xs: {
-        span: 24,
-      },
-      sm: {
-        span: 8,
-      },
+        span: 6,
     },
+};
+const formItemLayout = {
     wrapperCol: {
-      xs: {
-        span: 24,
-      },
-      sm: {
-        span: 16,
-      },
+        xs: {
+            span: 24,
+        },
+        sm: {
+            span: 16,
+        },
     },
-  };
-  const tailFormItemLayout = {
+};
+const tailFormItemLayout = {
     wrapperCol: {
-      xs: {
         span: 24,
-        offset: 0,
-      },
-      sm: {
-        span: 16,
-        offset: 8,
-      },
     },
-  };
-  
-  const Add = () => {
+};
+
+const Add = () => {
+    const history = useNavigate();
     const [form] = Form.useForm();
-  
-    const onFinish = (values) => {
-      console.log('Received values of form: ', values);
+    const [loading, setLoading] = useState(false);
+    const [dataStudent, setDataStudent] = useState([]);
+    const [dataSubject, setDataSubject] = useState([]);
+    useEffect(() => {
+        (async () => {
+            const resStudent = await StudentService.getSelect();
+            setDataStudent(resStudent.data);
+            const resSubject = await SubjectService.getSelect();
+            setDataSubject(resSubject.data);
+        })();
+    }, []);
+
+    const fetchData = async (params) => {
+        try {
+            setLoading(true);
+            const res = await PointService.post(params);
+            if (!res.error) history(configRoutes.routes.point);
+            else
+                notification.error({
+                    message: 'Error',
+                    description: res.error,
+                    duration: 3,
+                });
+
+            setLoading(false);
+            notification.success({
+                message: 'Success',
+                description: 'Add success',
+                duration: 3,
+            });
+        } catch ({ response }) {
+            notification.error({
+                message: 'Error',
+                description: response.data.error,
+                duration: 3,
+            });
+
+            setLoading(false);
+        }
     };
-  
-    const prefixSelector = (
-      <Form.Item name="prefix" noStyle>
-        <Select
-          style={{
-            width: 70,
-          }}
-        >
-          <Option value="86">+86</Option>
-          <Option value="87">+87</Option>
-        </Select>
-      </Form.Item>
-    );
-    const suffixSelector = (
-      <Form.Item name="suffix" noStyle>
-        <Select
-          style={{
-            width: 70,
-          }}
-        >
-          <Option value="USD">$</Option>
-          <Option value="CNY">¥</Option>
-        </Select>
-      </Form.Item>
-    );
-    const [autoCompleteResult, setAutoCompleteResult] = useState([]);
-  
-    const onWebsiteChange = (value) => {
-      if (!value) {
-        setAutoCompleteResult([]);
-      } else {
-        setAutoCompleteResult(['.com', '.org', '.net'].map((domain) => `${value}${domain}`));
-      }
-    };
-  
-    const websiteOptions = autoCompleteResult.map((website) => ({
-      label: website,
-      value: website,
-    }));
+    const onFinish = (params) => fetchData(params);
+
     return (
-      <Form
-        {...formItemLayout}
-        form={form}
-        name="register"
-        onFinish={onFinish}
-        initialValues={{
-          residence: ['zhejiang', 'hangzhou', 'xihu'],
-          prefix: '86',
-        }}
-        scrollToFirstError
-      >
-        <Form.Item
-          name="email"
-          label="E-mail"
-          rules={[
-            {
-              type: 'email',
-              message: 'The input is not valid E-mail!',
-            },
-            {
-              required: true,
-              message: 'Please input your E-mail!',
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-  
-        <Form.Item
-          name="password"
-          label="Password"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your password!',
-            },
-          ]}
-          hasFeedback
-        >
-          <Input.Password />
-        </Form.Item>
-  
-        <Form.Item
-          name="confirm"
-          label="Confirm Password"
-          dependencies={['password']}
-          hasFeedback
-          rules={[
-            {
-              required: true,
-              message: 'Please confirm your password!',
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('password') === value) {
-                  return Promise.resolve();
-                }
-  
-                return Promise.reject(new Error('The two passwords that you entered do not match!'));
-              },
-            }),
-          ]}
-        >
-          <Input.Password />
-        </Form.Item>
-  
-        <Form.Item
-          name="nickname"
-          label="Nickname"
-          tooltip="What do you want others to call you?"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your nickname!',
-              whitespace: true,
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-  
-        <Form.Item
-          name="residence"
-          label="Habitual Residence"
-          rules={[
-            {
-              type: 'array',
-              required: true,
-              message: 'Please select your habitual residence!',
-            },
-          ]}
-        >
-          <Cascader options={residences} />
-        </Form.Item>
-  
-        <Form.Item
-          name="phone"
-          label="Phone Number"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your phone number!',
-            },
-          ]}
-        >
-          <Input
-            addonBefore={prefixSelector}
-            style={{
-              width: '100%',
-            }}
-          />
-        </Form.Item>
-  
-        <Form.Item
-          name="donation"
-          label="Donation"
-          rules={[
-            {
-              required: true,
-              message: 'Please input donation amount!',
-            },
-          ]}
-        >
-          <InputNumber
-            addonAfter={suffixSelector}
-            style={{
-              width: '100%',
-            }}
-          />
-        </Form.Item>
-  
-        <Form.Item
-          name="website"
-          label="Website"
-          rules={[
-            {
-              required: true,
-              message: 'Please input website!',
-            },
-          ]}
-        >
-          <AutoComplete options={websiteOptions} onChange={onWebsiteChange} placeholder="website">
-            <Input />
-          </AutoComplete>
-        </Form.Item>
-  
-        <Form.Item
-          name="intro"
-          label="Intro"
-          rules={[
-            {
-              required: true,
-              message: 'Please input Intro',
-            },
-          ]}
-        >
-          <Input.TextArea showCount maxLength={100} />
-        </Form.Item>
-  
-        <Form.Item
-          name="gender"
-          label="Gender"
-          rules={[
-            {
-              required: true,
-              message: 'Please select gender!',
-            },
-          ]}
-        >
-          <Select placeholder="select your gender">
-            <Option value="male">Male</Option>
-            <Option value="female">Female</Option>
-            <Option value="other">Other</Option>
-          </Select>
-        </Form.Item>
-  
-        <Form.Item label="Captcha" extra="We must make sure that your are a human.">
-          <Row gutter={8}>
-            <Col span={12}>
-              <Form.Item
-                name="captcha"
-                noStyle
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input the captcha you got!',
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Button>Get captcha</Button>
-            </Col>
-          </Row>
-        </Form.Item>
-  
-        <Form.Item
-          name="agreement"
-          valuePropName="checked"
-          rules={[
-            {
-              validator: (_, value) =>
-                value ? Promise.resolve() : Promise.reject(new Error('Should accept agreement')),
-            },
-          ]}
-          {...tailFormItemLayout}
-        >
-          <Checkbox>
-            I have read the <a href="">agreement</a>
-          </Checkbox>
-        </Form.Item>
-        <Form.Item {...tailFormItemLayout}>
-          <Button type="primary" htmlType="submit">
-            Register
-          </Button>
-        </Form.Item>
-      </Form>
+        <Spin spinning={loading} tip="Loading...">
+            <Form {...layout} {...formItemLayout} form={form} name="add-class" onFinish={onFinish} scrollToFirstError>
+                <Form.Item
+                    className="text-left"
+                    name="idStudent"
+                    label="Student"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please select a option student',
+                        },
+                    ]}
+                >
+                    <Select
+                        placeholder="Select a option and change input text above"
+                        // onChange={this.onGenderChange}
+                        allowClear
+                    >
+                        {dataStudent.map((item) => (
+                            <Option key={item.id} value={item.id}>
+                                {item.name}
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+
+                <Form.Item
+                    name="idSubject"
+                    label="Subject"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please select a option subject',
+                        },
+                    ]}
+                >
+                    <Select
+                        placeholder="Select a option and change input text above"
+                        // onChange={this.onGenderChange}
+                        allowClear
+                    >
+                        {dataSubject.map((item) => (
+                            <Option key={item.id} value={item.id}>
+                                {item.name}
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+                <Form.Item
+                    name="numberOfTimes"
+                    label="Number Of Times"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please input your Number Of Times!',
+                        },
+                    ]}
+                >
+                    <Input type="number" min="1" />
+                </Form.Item>
+                <Form.Item
+                    name="points"
+                    label="Points"
+                    rules={[
+                        {
+                            required: true,
+                            message: 'Please input your Points!',
+                        },
+                    ]}
+                >
+                    <Input type="number" min="0" max="10" />
+                </Form.Item>
+                <Form.Item {...tailFormItemLayout}>
+                    <Link to={configRoutes.routes.point}>
+                        <Button className={`mr-4 ${cx('btn')}`} icon={<ArrowLeftOutlined />} danger>
+                            Back
+                        </Button>
+                    </Link>
+                    <Button
+                        className={`mt-2 sm:mt-0 ${cx('btn')}`}
+                        icon={<FileAddTwoTone />}
+                        type="primary"
+                        htmlType="submit"
+                    >
+                        Add point
+                    </Button>
+                </Form.Item>
+            </Form>
+        </Spin>
     );
-  };
-  
-  export default Add;
+};
+
+export default Add;

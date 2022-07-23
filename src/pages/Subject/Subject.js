@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Popconfirm, Table, Tooltip, notification } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
-import * as SubjectService from '~/services/SubjectService';
+import { SubjectService } from '~/services';
 import { useStore } from '~/store';
 import { useDebounce } from '~/hooks';
 import { configRoutes } from '~/config';
@@ -39,7 +39,7 @@ const Subject = () => {
                             </Tooltip>
                         </Popconfirm>
                         <Tooltip className="ml-5" placement="bottom" title={'Update ' + record.name} color="cyan">
-                            <Link to={configRoutes.routes.updateSubject} className="hover:text-cyan-500">
+                            <Link state={record} to={configRoutes.routes.updateSubject} className="hover:text-cyan-500">
                                 <EditOutlined />
                             </Link>
                         </Tooltip>
@@ -70,7 +70,7 @@ const Subject = () => {
                     );
                 else res = await SubjectService.get(params.pagination.current, params.pagination.pageSize);
                 setLoading(false);
-                setData(res.data.map((item, index) => ({ ...item, key: index })));
+                setData(res.data.map((item) => ({ ...item, key: item.id })));
                 setPagination({
                     ...params.pagination,
                     total: res.totalItems,

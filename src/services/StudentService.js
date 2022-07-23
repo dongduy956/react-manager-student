@@ -1,6 +1,6 @@
 import * as httpRequest from '~/utils/httpRequest';
 export const get = async (page, pagesize) => {
-    const res = await httpRequest.get('subject', {
+    const res = await httpRequest.get('student', {
         params: {
             page,
             pagesize,
@@ -9,15 +9,15 @@ export const get = async (page, pagesize) => {
     return res;
 };
 export const getSelect = async () => {
-    const res = await httpRequest.get(`subject/select`);
+    const res = await httpRequest.get(`student/select`);
     return res;
 };
 export const getByID = async (id) => {
-    const res = await httpRequest.get(`subject/${id}`);
+    const res = await httpRequest.get(`student/${id}`);
     return res;
 };
 export const search = async (q, page, pagesize) => {
-    const res = await httpRequest.get('subject/search', {
+    const res = await httpRequest.get('student/search', {
         params: {
             q,
             page,
@@ -28,17 +28,17 @@ export const search = async (q, page, pagesize) => {
 };
 
 export const del = async (id) => {
-    const res = await httpRequest.del(`subject/${id}`);
+    const res = await httpRequest.del(`student/${id}`);
     return res;
 };
 export const post = async (params = {}) => {
-    const res = await httpRequest.post('subject', {
+    const res = await httpRequest.post('student', {
         ...params,
     });
     return res;
 };
 export const put = async (id, params = {}) => {
-    const res = await httpRequest.put(`subject/${id}`, {
+    const res = await httpRequest.put(`student/${id}`, {
         ...params,
     });
     return res;

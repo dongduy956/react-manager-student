@@ -8,6 +8,14 @@ export const get = async (page, pagesize) => {
     });
     return res;
 };
+export const getSelect = async () => {
+    const res = await httpRequest.get(`classes/select`);
+    return res;
+};
+export const getByID = async (id) => {
+    const res = await httpRequest.get(`classes/${id}`);
+    return res;
+};
 export const del = async (id) => {
     const res = await httpRequest.del(`classes/${id}`);
     return res;
@@ -24,13 +32,13 @@ export const search = async (q, page, pagesize) => {
 };
 export const post = async (params = {}) => {
     const res = await httpRequest.post('classes', {
-        ...params
+        ...params,
     });
     return res;
 };
-export const put = async (id,params = {}) => {
+export const put = async (id, params = {}) => {
     const res = await httpRequest.put(`classes/${id}`, {
-        ...params
+        ...params,
     });
     return res;
 };

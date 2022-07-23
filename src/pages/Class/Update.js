@@ -3,7 +3,7 @@ import { ArrowLeftOutlined, FileAddTwoTone } from '@ant-design/icons';
 import { Button, Form, Input, Spin, notification } from 'antd';
 import className from 'classnames/bind';
 
-import * as ClassService from '~/services/ClassService';
+import { ClassService } from '~/services';
 import { configRoutes } from '~/config';
 import styles from './Class.module.scss';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -70,7 +70,7 @@ const Update = () => {
         <Spin spinning={loading} tip="Loading...">
             <Form {...formItemLayout} form={form} name="add-class" onFinish={onFinish} scrollToFirstError>
                 <Form.Item
-                   initialValue={state.name}
+                    initialValue={state.name}
                     name="name"
                     label="Name"
                     rules={[
@@ -80,7 +80,7 @@ const Update = () => {
                         },
                     ]}
                 >
-                    <Input defaultValue={state.name}/>
+                    <Input defaultValue={state.name} />
                 </Form.Item>
                 <Form.Item {...tailFormItemLayout}>
                     <Link to={configRoutes.routes.class}>
