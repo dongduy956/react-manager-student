@@ -1,11 +1,21 @@
 import { configRoutes, configTitles } from '~/config';
 import Class, { AddClass, UpdateClass } from '~/pages/Class';
 import Point, { AddPoint, UpdatePoint } from '~/pages/Point';
+import Login from '~/pages/Login';
 import Student, { AddStudent, UpdateStudent } from '~/pages/Student';
 import Subject, { AddSubject, UpdateSubject } from '~/pages/Subject';
 import Teacher, { AddTeacher, UpdateTeacher } from '~/pages/Teacher';
 
 export const publicRoutes = [
+    {
+        path: configRoutes.routes.login,
+        component: Login,
+        addRoute: configRoutes.routes.addPoint,
+        layout: null,
+    },
+];
+export const privateRoutes = [
+    
     {
         path: configRoutes.routes.point,
         component: Point,
@@ -85,4 +95,3 @@ export const publicRoutes = [
         title: configTitles.title.updateClass,
     },
 ];
-export const privateRoutes = [];

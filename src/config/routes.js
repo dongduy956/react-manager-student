@@ -1,10 +1,10 @@
-export const contains={
+export const contains = {
     updateClass: '/update-class/',
     updatePoint: '/update-point/',
     updateStudent: '/update-student/',
     updateTeacher: '/update-teacher/',
     updateSubject: '/update-subject/',
-}
+};
 export const routes = {
     point: '/',
     student: '/student',
@@ -21,4 +21,5 @@ export const routes = {
     updateStudent: `${contains.updateStudent}:alias`,
     updateTeacher: `${contains.updateTeacher}:alias`,
     updateSubject: `${contains.updateSubject}:alias`,
+    login: '/login',
 };

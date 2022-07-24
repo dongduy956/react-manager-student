@@ -1,13 +1,17 @@
 import { Fragment } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import routes from '~/routes';
-import { ProviderStore } from './store';
+import { ProviderStore, useStore } from './store';
 import MainLayout from './layouts';
 function App() {
+    const reduce = useStore();
+    console.log(reduce);
+    let arrRoutes = [...routes.publicRoutes];
+    // if (state) arrRoutes = [...arrRoutes, ...routes.privateRoutes];
     return (
         <Router>
             <Routes>
-                {routes.publicRoutes.map((route, index) => {
+                {arrRoutes.map((route, index) => {
                     const Page = route.component;
                     let Layout = MainLayout;
                     if (route.layout) Layout = route.layout;
