@@ -80,7 +80,7 @@ const Update = () => {
                         },
                     ]}
                 >
-                    <Input defaultValue={state.name} />
+                    <Input />
                 </Form.Item>
                 <Form.Item {...tailFormItemLayout}>
                     <Link to={configRoutes.routes.class}>

@@ -1,15 +1,23 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Popconfirm, Table, Tooltip, notification } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
+import Cookies from 'js-cookie';
 
 import { searchSelector } from '~/redux';
 import { RoleService, TeacherService } from '~/services';
 import { useDebounce } from '~/hooks';
-import { configRoutes } from '~/config';
+import { configCookies, configRoutes } from '~/config';
+import validateLogin from '~/components/validateLogin';
 
 const Student = () => {
+    validateLogin();
+    const history = useNavigate();
+    const setStatusAuth = () => {
+        Cookies.remove(configCookies.cookies.login);
+        history(configRoutes.routes.login);
+    };
     const searchText = useSelector(searchSelector);
     const columns = [
         {
@@ -99,73 +107,75 @@ const Student = () => {
     const fetchData = (params = {}) => {
         setLoading(true);
         (async () => {
-            try {
-                let res;
-                if (params.searchText)
-                    res = await TeacherService.search(
-                        params.searchText,
-                        params.pagination.current,
-                        params.pagination.pageSize,
-                    );
-                else res = await TeacherService.get(params.pagination.current, params.pagination.pageSize);
-                const newData = await (async () => {
-                    const data = [];
-                    for (var item of res.data) {
-                        const resRole = await RoleService.getByID(item.idRole);
-                        data.push({ ...item, key: item.id, role: resRole.name });
-                    }
-                    return data;
-                })();
+            let res;
+            if (params.searchText)
+                res = await TeacherService.search(
+                    params.searchText,
+                    params.pagination.current,
+                    params.pagination.pageSize,
+                );
+            else res = await TeacherService.get(params.pagination.current, params.pagination.pageSize);
+            if (res.status >= 400) {
                 setLoading(false);
-                setData(newData);
-                setPagination({
-                    ...params.pagination,
-                    total: res.totalItems,
-                });
-                if (params.delete)
-                    notification.success({
-                        message: 'Success',
-                        description: 'Delete success.',
-                        duration: 3,
-                    });
-            } catch (error) {
-                console.log(error);
-                setLoading(false);
+                setStatusAuth();
+                return;
             }
+            const newData = await (async () => {
+                const data = [];
+                for (var item of res.data) {
+                    const resRole = await RoleService.getByID(item.idRole);
+                    data.push({ ...item, key: item.id, role: resRole.name });
+                }
+                return data;
+            })();
+            setLoading(false);
+            setData(newData);
+            setPagination({
+                ...params.pagination,
+                total: res.totalItems,
+            });
+            if (params.delete)
+                notification.success({
+                    message: 'Success',
+                    description: 'Delete success.',
+                    duration: 3,
+                });
         })();
     };
     const handleDelete = (id) => {
         (async () => {
-            try {
-                setLoading(true);
-                await TeacherService.del(id);
-                setLoading(false);
-                fetchData({
-                    pagination,
-                    delete: true,
-                    searchText: debounced,
-                });
-            } catch ({ response }) {
-                setLoading(false);
+            setLoading(true);
+            const res = await TeacherService.del(id);
+            setLoading(false);
+            if (res.status === 401) {
+                setStatusAuth();
+                return;
+            }
+            if (res.status >= 400) {
                 notification.error({
                     message: 'Error',
-                    description: response.data.error,
+                    description: res.data.error,
                     duration: 3,
                 });
+                return;
             }
+            fetchData({
+                pagination,
+                delete: true,
+                searchText: debounced,
+            });
         })();
     };
     useEffect(() => {
-        fetchData({
-            pagination,
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useEffect(() => {
-        fetchData({
-            pagination,
-            searchText: debounced,
-        });
+        if (debounced)
+            fetchData({
+                pagination,
+                searchText: debounced,
+            });
+        else
+            fetchData({
+                pagination,
+            });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debounced]);
     const handleTableChange = (newPagination, filters, sorter) => {

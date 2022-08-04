@@ -1,17 +1,23 @@
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { notification, Popconfirm, Table, Tooltip } from 'antd';
+import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import validateLogin from '~/components/validateLogin';
-import { configRoutes } from '~/config';
+import { configCookies, configRoutes } from '~/config';
 import { useDebounce } from '~/hooks';
 import { searchSelector } from '~/redux';
 import { ClassService } from '~/services';
 
 const Class = () => {
     validateLogin();
+    const history = useNavigate();
+    const setStatusAuth = () => {
+        Cookies.remove(configCookies.cookies.login);
+        history(configRoutes.routes.login);
+    };
     const searchText = useSelector(searchSelector);
     const columns = [
         {
@@ -77,7 +83,7 @@ const Class = () => {
             else res = await ClassService.get(params.pagination.current, params.pagination.pageSize);
             setLoading(false);
             if (res.status >= 400) {
-                console.error('[Class-error]', res);
+                setStatusAuth();
                 return;
             }
             setData(res.data.map((item) => ({ ...item, key: item.id })));
@@ -98,8 +104,11 @@ const Class = () => {
             setLoading(true);
             const res = await ClassService.del(id);
             setLoading(false);
+            if (res.status === 401) {
+                setStatusAuth();
+                return;
+            }
             if (res.status >= 400) {
-                setLoading(false);
                 notification.error({
                     message: 'Error',
                     description: res.data.error,

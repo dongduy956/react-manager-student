@@ -1,15 +1,23 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Popconfirm, Table, Tooltip, notification } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { notification, Popconfirm, Table, Tooltip } from 'antd';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 
+import Cookies from 'js-cookie';
+import validateLogin from '~/components/validateLogin';
+import { configCookies, configRoutes } from '~/config';
+import { useDebounce } from '~/hooks';
 import { searchSelector } from '~/redux';
 import { SubjectService } from '~/services';
-import { useDebounce } from '~/hooks';
-import { configRoutes } from '~/config';
 
 const Subject = () => {
+    validateLogin();
+    const history = useNavigate();
+    const setStatusAuth = () => {
+        Cookies.remove(configCookies.cookies.login);
+        history(configRoutes.routes.login);
+    };
     const searchText = useSelector(searchSelector);
     const columns = [
         {
@@ -60,65 +68,66 @@ const Subject = () => {
     const fetchData = (params = {}) => {
         setLoading(true);
         (async () => {
-            try {
-                let res;
-                if (params.searchText)
-                    res = await SubjectService.search(
-                        params.searchText,
-                        params.pagination.current,
-                        params.pagination.pageSize,
-                    );
-                else res = await SubjectService.get(params.pagination.current, params.pagination.pageSize);
-                setLoading(false);
-                setData(res.data.map((item) => ({ ...item, key: item.id })));
-                setPagination({
-                    ...params.pagination,
-                    total: res.totalItems,
-                });
-                if (params.delete)
-                    notification.success({
-                        message: 'Success',
-                        description: 'Delete success.',
-                        duration: 3,
-                    });
-            } catch (error) {
-                console.log(error);
-                setLoading(false);
+            let res;
+            if (params.searchText)
+                res = await SubjectService.search(
+                    params.searchText,
+                    params.pagination.current,
+                    params.pagination.pageSize,
+                );
+            else res = await SubjectService.get(params.pagination.current, params.pagination.pageSize);
+            setLoading(false);
+            if (res.status >= 400) {
+                setStatusAuth();
+                return;
             }
+            setData(res.data.map((item) => ({ ...item, key: item.id })));
+            setPagination({
+                ...params.pagination,
+                total: res.totalItems,
+            });
+            if (params.delete)
+                notification.success({
+                    message: 'Success',
+                    description: 'Delete success.',
+                    duration: 3,
+                });
         })();
     };
     const handleDelete = (id) => {
         (async () => {
-            try {
-                setLoading(true);
-                await SubjectService.del(id);
-                setLoading(false);
-                fetchData({
-                    pagination,
-                    delete: true,
-                    searchText: debounced,
-                });
-            } catch ({ response }) {
-                setLoading(false);
+            setLoading(true);
+            const res = await SubjectService.del(id);
+            setLoading(false);
+            fetchData({
+                pagination,
+                delete: true,
+                searchText: debounced,
+            });
+            if (res.status === 401) {
+                setStatusAuth();
+                return;
+            }
+            if (res.status >= 400) {
                 notification.error({
                     message: 'Error',
-                    description: response.data.error,
+                    description: res.data.error,
                     duration: 3,
                 });
+                return;
             }
         })();
     };
     useEffect(() => {
-        fetchData({
-            pagination,
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useEffect(() => {
-        fetchData({
-            pagination,
-            searchText: debounced,
-        });
+        if (debounced)
+            fetchData({
+                pagination,
+                searchText: debounced,
+            });
+        else
+            fetchData({
+                pagination,
+            });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debounced]);
     const handleTableChange = (newPagination, filters, sorter) => {

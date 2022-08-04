@@ -47,32 +47,23 @@ const Add = () => {
     }, []);
 
     const fetchData = async (params) => {
-        try {
-            setLoading(true);
-            const res = await PointService.post(params);
-            if (!res.error) history(configRoutes.routes.point);
-            else
-                notification.error({
-                    message: 'Error',
-                    description: res.error,
-                    duration: 3,
-                });
-
-            setLoading(false);
+        setLoading(true);
+        const res = await PointService.post(params);
+        setLoading(false);
+        if (res.status < 400) {
             notification.success({
                 message: 'Success',
                 description: 'Add success',
                 duration: 3,
             });
-        } catch ({ response }) {
+
+            history(configRoutes.routes.point);
+        } else
             notification.error({
                 message: 'Error',
-                description: response.data.error,
+                description: res.error,
                 duration: 3,
             });
-
-            setLoading(false);
-        }
     };
     const onFinish = (params) => fetchData(params);
 
