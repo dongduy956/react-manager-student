@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Popconfirm, Table, Tooltip, notification } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { notification, Popconfirm, Table, Tooltip } from 'antd';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
-import { useStore } from '~/store';
-import { ClassService } from '~/services';
-import { useDebounce } from '~/hooks';
+import validateLogin from '~/components/validateLogin';
 import { configRoutes } from '~/config';
+import { useDebounce } from '~/hooks';
+import { searchSelector } from '~/redux';
+import { ClassService } from '~/services';
 
 const Class = () => {
+    validateLogin();
+    const searchText = useSelector(searchSelector);
     const columns = [
         {
             title: 'ID',
@@ -51,9 +55,8 @@ const Class = () => {
                 ) : null,
         },
     ];
-    const { reduce } = useStore();
-    const [state] = reduce;
-    const debounced = useDebounce(state.searchText, 500);
+
+    const debounced = useDebounce(searchText, 500);
     const [data, setData] = useState();
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({
@@ -64,65 +67,64 @@ const Class = () => {
     const fetchData = (params = {}) => {
         setLoading(true);
         (async () => {
-            try {
-                let res;
-                if (params.searchText)
-                    res = await ClassService.search(
-                        params.searchText,
-                        params.pagination.current,
-                        params.pagination.pageSize,
-                    );
-                else res = await ClassService.get(params.pagination.current, params.pagination.pageSize);
-                setLoading(false);
-                setData(res.data.map((item) => ({ ...item, key: item.id })));
-                setPagination({
-                    ...params.pagination,
-                    total: res.totalItems,
-                });
-                if (params.delete)
-                    notification.success({
-                        message: 'Success',
-                        description: 'Delete success.',
-                        duration: 3,
-                    });
-            } catch (error) {
-                console.log(error);
-                setLoading(false);
+            let res;
+            if (params.searchText)
+                res = await ClassService.search(
+                    params.searchText,
+                    params.pagination.current,
+                    params.pagination.pageSize,
+                );
+            else res = await ClassService.get(params.pagination.current, params.pagination.pageSize);
+            setLoading(false);
+            if (res.status >= 400) {
+                console.error('[Class-error]', res);
+                return;
             }
+            setData(res.data.map((item) => ({ ...item, key: item.id })));
+            setPagination({
+                ...params.pagination,
+                total: res.totalItems,
+            });
+            if (params.delete)
+                notification.success({
+                    message: 'Success',
+                    description: 'Delete success.',
+                    duration: 3,
+                });
         })();
     };
     const handleDelete = (id) => {
         (async () => {
-            try {
-                setLoading(true);
-                await ClassService.del(id);
-                setLoading(false);
-                fetchData({
-                    pagination,
-                    delete: true,
-                    searchText: debounced,
-                });
-            } catch ({ response }) {
+            setLoading(true);
+            const res = await ClassService.del(id);
+            setLoading(false);
+            if (res.status >= 400) {
                 setLoading(false);
                 notification.error({
                     message: 'Error',
-                    description: response.data.error,
+                    description: res.data.error,
                     duration: 3,
                 });
+                return;
             }
+            fetchData({
+                pagination,
+                delete: true,
+                searchText: debounced,
+            });
         })();
     };
     useEffect(() => {
-        fetchData({
-            pagination,
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useEffect(() => {
-        fetchData({
-            pagination,
-            searchText: debounced,
-        });
+        if (debounced)
+            fetchData({
+                pagination,
+                searchText: debounced,
+            });
+        else
+            fetchData({
+                pagination,
+            });
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debounced]);
     const handleTableChange = (newPagination, filters, sorter) => {

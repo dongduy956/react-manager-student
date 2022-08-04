@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Popconfirm, Table, Tooltip, notification } from 'antd';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { useSelector } from 'react-redux';
 
-import { useStore } from '~/store';
+import { searchSelector } from '~/redux';
 import { PointService, StudentService, SubjectService } from '~/services';
 import { useDebounce } from '~/hooks';
 import { configRoutes } from '~/config';
 
 const Student = () => {
+    const searchText = useSelector(searchSelector);
     const columns = [
         {
             title: 'Student',
@@ -65,9 +67,7 @@ const Student = () => {
                 ) : null,
         },
     ];
-    const { reduce } = useStore();
-    const [state] = reduce;
-    const debounced = useDebounce(state.searchText, 500);
+    const debounced = useDebounce(searchText, 500);
     const [data, setData] = useState();
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({

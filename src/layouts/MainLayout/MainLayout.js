@@ -6,7 +6,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Footer, Header, Sider } from '~/layouts/components';
-import { useStore } from '~/store';
 import Search from '~/components/Search';
 import './MainLayout.css';
 import styles from './MainLayout.module.scss';
@@ -15,9 +14,7 @@ const cx = className.bind(styles);
 
 const { Content } = Layout;
 
-const MainLayout = ({ children }) => {
-    const { addRoute, title } = useStore();
-
+const MainLayout = ({ addRoute = '', title = '', children }) => {
     const [breakpoint, setBreakpoint] = useState(true);
     const handleChangeBreakpoint = (broken) => setBreakpoint(broken);
     return (
@@ -58,7 +55,9 @@ const MainLayout = ({ children }) => {
                                 </Link>
                             </>
                         )}
-                        {title && <h3 className="flex-1 text-center text-cyan-700 text-4xl uppercase leading-10">{title}</h3>}
+                        {title && (
+                            <h3 className="flex-1 text-center text-cyan-700 text-4xl uppercase leading-10">{title}</h3>
+                        )}
                     </div>
                     <div
                         className="site-layout-background"
@@ -77,5 +76,7 @@ const MainLayout = ({ children }) => {
 };
 PropTypes.propTypes = {
     children: PropTypes.node.isRequired,
+    addRoute: PropTypes.string,
+    title: PropTypes.string,
 };
 export default MainLayout;

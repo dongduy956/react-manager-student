@@ -6,6 +6,7 @@ export const contains = {
     updateSubject: '/update-subject/',
 };
 export const routes = {
+    notFound: '*',
     point: '/',
     student: '/student',
     teacher: '/teacher',

@@ -5,17 +5,19 @@ import Login from '~/pages/Login';
 import Student, { AddStudent, UpdateStudent } from '~/pages/Student';
 import Subject, { AddSubject, UpdateSubject } from '~/pages/Subject';
 import Teacher, { AddTeacher, UpdateTeacher } from '~/pages/Teacher';
+import NotFound from '~/pages/NotFound';
 
 export const publicRoutes = [
     {
-        path: configRoutes.routes.login,
-        component: Login,
-        addRoute: configRoutes.routes.addPoint,
+        path: configRoutes.routes.notFound,
+        component: NotFound,
         layout: null,
     },
-];
-export const privateRoutes = [
-    
+    {
+        path: configRoutes.routes.login,
+        component: Login,
+        layout: null,
+    },
     {
         path: configRoutes.routes.point,
         component: Point,
@@ -26,7 +28,6 @@ export const privateRoutes = [
         component: Teacher,
         addRoute: configRoutes.routes.addTeacher,
     },
-
     {
         path: configRoutes.routes.student,
         component: Student,
@@ -95,3 +96,4 @@ export const privateRoutes = [
         title: configTitles.title.updateClass,
     },
 ];
+export const privateRoutes = [];
