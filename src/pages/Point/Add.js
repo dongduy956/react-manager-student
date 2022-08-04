@@ -50,7 +50,13 @@ const Add = () => {
         setLoading(true);
         const res = await PointService.post(params);
         setLoading(false);
-        if (res.status < 400) {
+        if (res.status >= 400) {
+            notification.error({
+                message: 'Error',
+                description: res.data.error,
+                duration: 3,
+            });
+        } else {
             notification.success({
                 message: 'Success',
                 description: 'Add success',
@@ -58,12 +64,7 @@ const Add = () => {
             });
 
             history(configRoutes.routes.point);
-        } else
-            notification.error({
-                message: 'Error',
-                description: res.error,
-                duration: 3,
-            });
+        }
     };
     const onFinish = (params) => fetchData(params);
 
