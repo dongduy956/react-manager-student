@@ -16,6 +16,17 @@ export const get = async (page, pagesize) => {
         return response;
     }
 };
+export const getByID = async (id) => {
+    try {
+        await refreshTokenService();
+        const res = await httpRequest.get(`teacher/${id}`, {
+            headers: authHeader(),
+        });
+        return res;
+    } catch ({ response }) {
+        return response;
+    }
+};
 export const del = async (id) => {
     try {
         await refreshTokenService();
@@ -68,6 +79,39 @@ export const put = async (id, params = {}) => {
             {
                 ...params,
             },
+            {
+                headers: authHeader(),
+            },
+        );
+        return res;
+    } catch ({ response }) {
+        return response;
+    }
+};
+export const changePassword = async (id, params = {}) => {
+    try {
+        await refreshTokenService();
+        const res = await httpRequest.put(
+            `teacher/ChangePass/${id}`,
+            {
+                ...params,
+            },
+            {
+                headers: authHeader(),
+            },
+        );
+        return res;
+    } catch ({ response }) {
+        return response;
+    }
+};
+
+export const resetPassword = async (id, params = {}) => {
+    try {
+        await refreshTokenService();
+        const res = await httpRequest.put(
+            `teacher/ResetPassword/${id}`,
+            {},
             {
                 headers: authHeader(),
             },

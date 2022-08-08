@@ -7,6 +7,7 @@ import { ClassService } from '~/services';
 import { configRoutes } from '~/config';
 import styles from './Class.module.scss';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import validateLogin from '~/components/validateLogin';
 
 const cx = className.bind(styles);
 
@@ -32,6 +33,7 @@ const tailFormItemLayout = {
 };
 
 const Update = () => {
+    validateLogin();
     const { state } = useLocation();
     const history = useNavigate();
     const [form] = Form.useForm();

@@ -1,24 +1,47 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Popconfirm, Table, Tooltip, notification } from 'antd';
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { useSelector } from 'react-redux';
+import { DeleteOutlined, EditOutlined, LoadingOutlined, SyncOutlined } from '@ant-design/icons';
+import { notification, Popconfirm, Table, Tooltip } from 'antd';
 import Cookies from 'js-cookie';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 
+import validateLogin from '~/components/validateLogin';
+import { configCookies, configStorage, configRoutes } from '~/config';
+import { useDebounce } from '~/hooks';
 import { searchSelector } from '~/redux';
 import { RoleService, TeacherService } from '~/services';
-import { useDebounce } from '~/hooks';
-import { configCookies, configRoutes } from '~/config';
-import validateLogin from '~/components/validateLogin';
 
 const Student = () => {
     validateLogin();
+    const [loadingChangePass, setLoadingChangePass] = useState(0);
+
     const history = useNavigate();
     const setStatusAuth = () => {
+        sessionStorage.removeItem(configStorage.sessionStorages.sider);
         Cookies.remove(configCookies.cookies.login);
         history(configRoutes.routes.login);
     };
     const searchText = useSelector(searchSelector);
+    const handleResetPass = (id) => {
+        (async () => {
+            setLoadingChangePass(id);
+            const res = await TeacherService.resetPassword(id);
+            setLoadingChangePass(0);
+            if (res.status >= 400) {
+                notification.error({
+                    message: 'Error',
+                    description: res.data.error,
+                    duration: 3,
+                });
+            } else {
+                notification.success({
+                    message: 'Success',
+                    description: res.message,
+                    duration: 3,
+                });
+            }
+        })();
+    };
     const columns = [
         {
             title: 'ID',
@@ -77,13 +100,13 @@ const Student = () => {
                     <>
                         <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.id)}>
                             {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
-                            <Tooltip placement="bottom" title={'Delete ' + record.name} color="red">
+                            <Tooltip placement="bottom" title="Delete" color="red">
                                 <button className="hover:text-rose-800">
                                     <DeleteOutlined />
                                 </button>
                             </Tooltip>
                         </Popconfirm>
-                        <Tooltip className="ml-5" placement="bottom" title={'Update ' + record.name} color="cyan">
+                        <Tooltip className="ml-5" placement="bottom" title="Update" color="cyan">
                             <Link
                                 state={record}
                                 to={configRoutes.contains.updateTeacher + record.alias}
@@ -92,6 +115,21 @@ const Student = () => {
                                 <EditOutlined />
                             </Link>
                         </Tooltip>
+                        {loadingChangePass === record.id ? (
+                            <LoadingOutlined
+                                style={{
+                                    fontSize: 24,
+                                    color: 'gold',
+                                }}
+                                spin
+                            />
+                        ) : (
+                            <Tooltip className="ml-5" placement="bottom" title="Reset password" color="gold">
+                                <button onClick={() => handleResetPass(record.id)} className="hover:text-yellow-600">
+                                    <SyncOutlined />
+                                </button>
+                            </Tooltip>
+                        )}
                     </>
                 ) : null,
         },

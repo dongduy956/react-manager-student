@@ -8,6 +8,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { configRoutes } from '~/config';
 import styles from './Student.module.scss';
 import { ClassService, UploadService, StudentService } from '~/services';
+import validateLogin from '~/components/validateLogin';
 
 const cx = className.bind(styles);
 const { Option } = Select;
@@ -40,6 +41,7 @@ const tailFormItemLayout = {
 };
 
 const Update = () => {
+    validateLogin();
     const { state } = useLocation();
     const props = {
         name: 'file',
@@ -129,7 +131,11 @@ const Update = () => {
     };
     const onFinish = (params) => {
         params.image = imageStudent;
-        params.dateOfBirth = dateOfBirth.format();
+        try {
+            params.dateOfBirth = dateOfBirth.format();
+        } catch (error) {
+            params.dateOfBirth = dateOfBirth;
+        }
         fetchData(params);
     };
 

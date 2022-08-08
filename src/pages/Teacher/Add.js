@@ -8,6 +8,7 @@ import { RoleService, UploadService, TeacherService } from '~/services';
 import { configRoutes } from '~/config';
 import styles from './Teacher.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
+import validateLogin from '~/components/validateLogin';
 
 const cx = className.bind(styles);
 const { Option } = Select;
@@ -34,6 +35,7 @@ const tailFormItemLayout = {
 };
 
 const Add = () => {
+    validateLogin();
     const props = {
         name: 'file',
         multiple: false,
@@ -80,7 +82,7 @@ const Add = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [dataRole, setDataRole] = useState([]);
-    const [dateOfBirth, setDateOfBirth] = useState();
+    const [dateOfBirth, setDateOfBirth] = useState(moment());
     const [imageTeacher, setImageTeacher] = useState('');
     useEffect(() => {
         (async () => {
@@ -123,7 +125,7 @@ const Add = () => {
     const onFinish = (params) => {
         params.image = imageTeacher;
         params.dateOfBirth = dateOfBirth.format();
-        
+
         fetchData(params);
     };
 

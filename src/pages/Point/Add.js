@@ -7,6 +7,7 @@ import { SubjectService, PointService, StudentService } from '~/services';
 import { configRoutes } from '~/config';
 import styles from './Point.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
+import validateLogin from '~/components/validateLogin';
 
 const cx = className.bind(styles);
 const { Option } = Select;
@@ -32,6 +33,7 @@ const tailFormItemLayout = {
 };
 
 const Add = () => {
+    validateLogin();
     const history = useNavigate();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);

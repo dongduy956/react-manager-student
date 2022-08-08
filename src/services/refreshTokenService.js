@@ -1,17 +1,18 @@
 import Cookies from 'js-cookie';
-import jwtDecode from 'jwt-decode';
+import { isExpired } from 'react-jwt';
+import { configCookies } from '~/config';
 import { AuthService } from '.';
 
 async function refreshTokenService() {
-    let login = Cookies.get('login');
+    let login = Cookies.get(configCookies.cookies.login);
     if (login) {
         login = JSON.parse(login);
-        if (jwtDecode(login.token).exp < Date.now() / 1000) {
+        if (isExpired(login.token)) {
             const res = await AuthService.refreshToken({
                 expiredToken: login.token,
                 refreshToken: login.refreshToken,
             });
-            Cookies.set('login', JSON.stringify(res.data));
+            Cookies.set(configCookies.cookies.login, JSON.stringify(res.data), { expires: res.data.day });
         }
     }
 }

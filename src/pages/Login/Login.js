@@ -1,20 +1,23 @@
+import { Button, Form, Input, notification, Spin } from 'antd';
 import Cookies from 'js-cookie';
-
-import { Button, Checkbox, Form, Input, notification, Spin } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { decodeToken } from 'react-jwt';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { AuthService } from '~/services';
+import { configCookies, configRoutes } from '~/config';
+import { authSlice } from '~/redux/slices';
+import { AuthService, TeacherService } from '~/services';
 const Login = () => {
+    const dispatch = useDispatch();
     const history = useNavigate();
     const [loading, setLoading] = useState(false);
     const onFinish = (params) => {
-        delete params.remember;
         fetchData(params);
     };
     useEffect(() => {
-        if (Cookies.get('login')) {
-            history('/');
+        if (Cookies.get(configCookies.cookies.login)) {
+            history(configRoutes.routes.point);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -22,9 +25,11 @@ const Login = () => {
         try {
             setLoading(true);
             const res = await AuthService.login(params);
-            Cookies.set('login', JSON.stringify(res.data));
+            Cookies.set(configCookies.cookies.login, JSON.stringify(res.data), { expires: res.data.day });
+            const auth = await TeacherService.getByID(decodeToken(res.data.token).nameid);
+            dispatch(authSlice.actions.setAuthActive(auth));
             setLoading(false);
-            history('/');
+            history(configRoutes.routes.point);
         } catch (error) {
             setLoading(false);
             console.log(error);
@@ -36,13 +41,10 @@ const Login = () => {
         }
     };
 
-    const onFinishFailed = (errorInfo) => {
-        console.log('Failed:', errorInfo);
-    };
-
     return (
         <Spin spinning={loading} tip="Loading...">
-            <div className="flex justify-center items-center h-screen">
+            <div className="flex justify-center items-center h-screen flex-col">
+                <h1 className="text-red-900 font-bold text-center">Đăng nhập hệ thống</h1>
                 <Form
                     name="basic"
                     labelCol={{
@@ -51,11 +53,7 @@ const Login = () => {
                     wrapperCol={{
                         span: 16,
                     }}
-                    initialValues={{
-                        remember: true,
-                    }}
                     onFinish={onFinish}
-                    onFinishFailed={onFinishFailed}
                     autoComplete="off"
                 >
                     <Form.Item
@@ -83,18 +81,6 @@ const Login = () => {
                     >
                         <Input.Password />
                     </Form.Item>
-
-                    <Form.Item
-                        name="remember"
-                        valuePropName="checked"
-                        wrapperCol={{
-                            offset: 8,
-                            span: 16,
-                        }}
-                    >
-                        <Checkbox>Remember me</Checkbox>
-                    </Form.Item>
-
                     <Form.Item
                         wrapperCol={{
                             offset: 8,

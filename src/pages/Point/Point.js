@@ -8,13 +8,14 @@ import Cookies from 'js-cookie';
 import { searchSelector } from '~/redux';
 import { PointService, StudentService, SubjectService } from '~/services';
 import { useDebounce } from '~/hooks';
-import { configCookies, configRoutes } from '~/config';
+import { configCookies, configStorage, configRoutes } from '~/config';
 import validateLogin from '~/components/validateLogin';
 
 const Point = () => {
     validateLogin();
     const history = useNavigate();
     const setStatusAuth = () => {
+        sessionStorage.removeItem(configStorage.sessionStorages.sider);
         Cookies.remove(configCookies.cookies.login);
         history(configRoutes.routes.login);
     };

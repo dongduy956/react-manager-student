@@ -11,3 +11,9 @@ export const refreshToken = async (params = {}) => {
     });
     return res;
 };
+export const logout = async (params = {}) => {
+    const res = await httpRequest.post('Auth/logout', {
+        ...params,
+    });
+    return res;
+};

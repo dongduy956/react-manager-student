@@ -1,10 +1,11 @@
 import { DesktopOutlined, FileOutlined, PieChartOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import {useDispatch} from 'react-redux'
-import { searchSlice } from '~/redux/slices'
+
 import { configRoutes } from '~/config';
+import { searchSlice } from '~/redux/slices';
 
 const { Sider } = Layout;
 
@@ -24,11 +25,13 @@ const items = [
     getItem(<Link to={configRoutes.routes.teacher}>Teacher</Link>, '5', <FileOutlined />),
 ];
 function SiderCB({ onChangeBreakpoint }) {
-    const dispatch=useDispatch();
+    const siderActive = sessionStorage.getItem('sider');
+    const selectKeys = siderActive ? JSON.parse(siderActive) : ['1'];
+    const dispatch = useDispatch();
     const [collapsed, setCollapsed] = useState(false);
     const [collapsedWidth, setCollapsedWidth] = useState(80);
-    const [selectedKeys, setSelectedKeys] = useState(['1']);
     const [broken, setBroken] = useState(false);
+    const [selectedKeys, setSelectedKeys] = useState(selectKeys);
 
     return (
         <Sider
@@ -47,7 +50,10 @@ function SiderCB({ onChangeBreakpoint }) {
             <Link
                 to={configRoutes.routes.point}
                 className="logo flex justify-center"
-                onClick={() => setSelectedKeys(['1'])}
+                onClick={() => {
+                    sessionStorage.setItem('sider', JSON.stringify(['1']));
+                    setSelectedKeys(['1']);
+                }}
             >
                 <img
                     className="w-16 h-16 rounded-full my-4"
@@ -56,12 +62,13 @@ function SiderCB({ onChangeBreakpoint }) {
                 />
             </Link>
             <Menu
+                selectedKeys={selectedKeys}
+                defaultSelectedKeys={selectedKeys}
                 theme="dark"
-                defaultSelectedKeys={['1']}
                 mode="inline"
                 items={items}
-                selectedKeys={selectedKeys}
                 onSelect={(item) => {
+                    sessionStorage.setItem('sider', JSON.stringify([item.key]));
                     setSelectedKeys([item.key]);
                     if (broken) setCollapsed(true);
                     dispatch(searchSlice.actions.setSearch(''));

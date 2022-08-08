@@ -8,6 +8,7 @@ import { ClassService, UploadService, StudentService } from '~/services';
 import { configRoutes } from '~/config';
 import styles from './Student.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
+import validateLogin from '~/components/validateLogin';
 
 const cx = className.bind(styles);
 const { Option } = Select;
@@ -34,6 +35,7 @@ const tailFormItemLayout = {
 };
 
 const Add = () => {
+    validateLogin();
     const props = {
         name: 'file',
         multiple: false,
@@ -80,7 +82,7 @@ const Add = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [dataClass, setDataClass] = useState([]);
-    const [dateOfBirth, setDateOfBirth] = useState();
+    const [dateOfBirth, setDateOfBirth] = useState(moment());
     const [imageStudent, setImageStudent] = useState('');
     useEffect(() => {
         (async () => {
@@ -177,10 +179,7 @@ const Add = () => {
                         ))}
                     </Select>
                 </Form.Item>
-                <Form.Item
-                    name="image"
-                    label="Image"
-                >
+                <Form.Item name="image" label="Image">
                     <Dragger {...props}>
                         <p className="ant-upload-drag-icon">
                             <InboxOutlined />

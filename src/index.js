@@ -8,6 +8,27 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import store from './redux';
 
+// Import the functions you need from the SDKs you need
+import { initializeApp } from 'firebase/app';
+import { getAnalytics } from 'firebase/analytics';
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+    apiKey: 'AIzaSyCLoYdxkL09HcfFPpVJYbiqUIRGRCYJZ08',
+    authDomain: 'manager-student-52a76.firebaseapp.com',
+    projectId: 'manager-student-52a76',
+    storageBucket: 'manager-student-52a76.appspot.com',
+    messagingSenderId: '807398037767',
+    appId: '1:807398037767:web:80f29cc1af1e01b0e84da2',
+    measurementId: 'G-S007JHMJ2Z',
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+getAnalytics(app);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     // <React.StrictMode>

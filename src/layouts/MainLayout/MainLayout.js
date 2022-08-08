@@ -1,5 +1,5 @@
-import { FileAddTwoTone } from '@ant-design/icons';
-import { Breadcrumb, Button, Layout } from 'antd';
+import { FileAddTwoTone, ArrowUpOutlined } from '@ant-design/icons';
+import { BackTop, Breadcrumb, Button, Layout } from 'antd';
 import className from 'classnames/bind';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
@@ -71,6 +71,11 @@ const MainLayout = ({ addRoute = '', title = '', children }) => {
                 </Content>
                 <Footer />
             </Layout>
+            <BackTop>
+                <div className="text-blue-900">
+                    <ArrowUpOutlined />
+                </div>
+            </BackTop>
         </Layout>
     );
 };

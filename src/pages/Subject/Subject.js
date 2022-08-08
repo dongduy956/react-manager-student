@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import Cookies from 'js-cookie';
 import validateLogin from '~/components/validateLogin';
-import { configCookies, configRoutes } from '~/config';
+import { configCookies, configStorage, configRoutes } from '~/config';
 import { useDebounce } from '~/hooks';
 import { searchSelector } from '~/redux';
 import { SubjectService } from '~/services';
@@ -15,6 +15,7 @@ const Subject = () => {
     validateLogin();
     const history = useNavigate();
     const setStatusAuth = () => {
+        sessionStorage.removeItem(configStorage.sessionStorages.sider);
         Cookies.remove(configCookies.cookies.login);
         history(configRoutes.routes.login);
     };

@@ -8,6 +8,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { configRoutes } from '~/config';
 import styles from './Teacher.module.scss';
 import { RoleService, UploadService, TeacherService } from '~/services';
+import validateLogin from '~/components/validateLogin';
+import { useDispatch, useSelector } from 'react-redux';
+import { authActiveSelector, pathUpdateAuthSelector } from '~/redux';
+import { authSlice } from '~/redux/slices';
 
 const cx = className.bind(styles);
 const { Option } = Select;
@@ -40,7 +44,16 @@ const tailFormItemLayout = {
 };
 
 const Update = () => {
-    const { state } = useLocation();
+    validateLogin();
+    let { state } = useLocation();
+    const dispatch = useDispatch();
+    const auth = useSelector(authActiveSelector);
+    const pathName = useSelector(pathUpdateAuthSelector);
+    let checkAuthActive = false;
+    if (!state) {
+        state = auth;
+        checkAuthActive = true;
+    }
     const props = {
         name: 'file',
         multiple: false,
@@ -100,35 +113,37 @@ const Update = () => {
         setDateOfBirth(date);
     };
     const fetchData = async (params) => {
-        try {
-            setLoading(true);
-            const res = await TeacherService.put(state.id, params);
-            if (!res.error) history(configRoutes.routes.teacher);
-            else
-                notification.error({
-                    message: 'Error',
-                    description: res.error,
-                    duration: 3,
-                });
+        setLoading(true);
+        const res = await TeacherService.put(state.id, params);
 
+        if (res.status !== 401) {
+            if (checkAuthActive) {
+                const res = await TeacherService.getByID(state.id);
+                dispatch(authSlice.actions.setAuthActive(res));
+                history(pathName);
+            } else history(configRoutes.routes.teacher);
             setLoading(false);
             notification.success({
                 message: 'Success',
                 description: 'Update success',
                 duration: 3,
             });
-        } catch ({ response }) {
+        } else {
+            setLoading(false);
             notification.error({
                 message: 'Error',
-                description: response.data.error,
+                description: res.error,
                 duration: 3,
             });
-            setLoading(false);
         }
     };
     const onFinish = (params) => {
         params.image = imageTeacher;
-        params.dateOfBirth = dateOfBirth.format();
+        try {
+            params.dateOfBirth = dateOfBirth.format();
+        } catch (error) {
+            params.dateOfBirth = dateOfBirth;
+        }
         fetchData(params);
     };
 

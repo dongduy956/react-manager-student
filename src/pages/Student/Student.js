@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { searchSelector } from '~/redux';
 import { ClassService, StudentService } from '~/services';
 import { useDebounce } from '~/hooks';
-import { configRoutes, configCookies } from '~/config';
+import { configRoutes, configCookies, configStorage } from '~/config';
 import validateLogin from '~/components/validateLogin';
 import Cookies from 'js-cookie';
 
@@ -15,6 +15,7 @@ const Student = () => {
     validateLogin();
     const history = useNavigate();
     const setStatusAuth = () => {
+        sessionStorage.removeItem(configStorage.sessionStorages.sider);
         Cookies.remove(configCookies.cookies.login);
         history(configRoutes.routes.login);
     };
