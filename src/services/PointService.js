@@ -1,15 +1,11 @@
-import * as httpRequest from '~/utils/httpRequest';
-import authHeader from './authHeader';
-import refreshTokenService from './refreshTokenService';
+import * as httpRequestPrivate from '~/utils/httpRequestPrivate';
 export const get = async (page, pagesize) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.get('point', {
+        const res = await httpRequestPrivate.get('point', {
             params: {
                 page,
                 pagesize,
             },
-            headers: authHeader(),
         });
         return res;
     } catch ({ response }) {
@@ -18,10 +14,7 @@ export const get = async (page, pagesize) => {
 };
 export const del = async (idStudent, idSubject, numberOfTimes) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.del(`point/${idStudent}&${idSubject}&${numberOfTimes}`, {
-            headers: authHeader(),
-        });
+        const res = await httpRequestPrivate.del(`point/${idStudent}&${idSubject}&${numberOfTimes}`);
         return res;
     } catch ({ response }) {
         return response;
@@ -29,14 +22,12 @@ export const del = async (idStudent, idSubject, numberOfTimes) => {
 };
 export const search = async (q, page, pagesize) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.get('point/search', {
+        const res = await httpRequestPrivate.get('point/search', {
             params: {
                 q,
                 page,
                 pagesize,
             },
-            headers: authHeader(),
         });
         return res;
     } catch ({ response }) {
@@ -45,16 +36,9 @@ export const search = async (q, page, pagesize) => {
 };
 export const post = async (params = {}) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.post(
-            'point',
-            {
-                ...params,
-            },
-            {
-                headers: authHeader(),
-            },
-        );
+        const res = await httpRequestPrivate.post('point', {
+            ...params,
+        });
         return res;
     } catch ({ response }) {
         return response;
@@ -62,14 +46,9 @@ export const post = async (params = {}) => {
 };
 export const put = async (idStudent, idSubject, numberOfTimes, params = {}) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.put(
-            `point/${idStudent}&${idSubject}&${numberOfTimes}`,
-            {
-                ...params,
-            },
-            { headers: authHeader() },
-        );
+        const res = await httpRequestPrivate.put(`point/${idStudent}&${idSubject}&${numberOfTimes}`, {
+            ...params,
+        });
         return res;
     } catch ({ response }) {
         return response;

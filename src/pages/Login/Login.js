@@ -27,6 +27,7 @@ const Login = () => {
             const res = await AuthService.login(params);
             Cookies.set(configCookies.cookies.login, JSON.stringify(res.data), { expires: res.data.day });
             const auth = await TeacherService.getByID(decodeToken(res.data.token).nameid);
+            console.log('[LoginPage]', auth);
             dispatch(authSlice.actions.setAuthActive(auth));
             setLoading(false);
             history(configRoutes.routes.point);

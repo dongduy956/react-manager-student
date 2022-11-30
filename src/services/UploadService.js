@@ -1,6 +1,6 @@
-import * as httpRequest from '~/utils/httpRequest';
+import * as httpRequestPublic from '~/utils/httpRequestPublic';
 
 export const image = async (formData) => {
-    const res = await httpRequest.post('upload', formData,);
+    const res = await httpRequestPublic.post('upload', formData);
     return res;
 };

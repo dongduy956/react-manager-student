@@ -1,11 +1,8 @@
-import * as httpRequest from '~/utils/httpRequest';
-import authHeader from './authHeader';
-import refreshTokenService from './refreshTokenService';
+import * as httpRequestPrivate from '~/utils/httpRequestPrivate';
 
 export const getByID = async (id) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.get(`role/${id}`, { headers: authHeader() });
+        const res = await httpRequestPrivate.get(`role/${id}`);
         return res;
     } catch ({ response }) {
         return response;
@@ -14,8 +11,7 @@ export const getByID = async (id) => {
 
 export const getSelect = async () => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.get(`role/select`, { headers: authHeader() });
+        const res = await httpRequestPrivate.get(`role/select`);
         return res;
     } catch ({ response }) {
         return response;

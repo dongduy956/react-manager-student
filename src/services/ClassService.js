@@ -1,16 +1,12 @@
-import * as httpRequest from '~/utils/httpRequest';
-import authHeader from './authHeader';
-import refreshTokenService from './refreshTokenService';
+import httpRequestPrivate from '~/utils/httpRequestPrivate';
 
 export const get = async (page, pagesize) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.get('classes', {
+        const res = await httpRequestPrivate.get('classes', {
             params: {
                 page,
                 pagesize,
             },
-            headers: authHeader(),
         });
         return res;
     } catch ({ response }) {
@@ -19,10 +15,7 @@ export const get = async (page, pagesize) => {
 };
 export const getSelect = async () => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.get(`classes/select`, {
-            headers: authHeader(),
-        });
+        const res = await httpRequestPrivate.get(`classes/select`);
         return res;
     } catch ({ response }) {
         return response;
@@ -30,10 +23,7 @@ export const getSelect = async () => {
 };
 export const getByID = async (id) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.get(`classes/${id}`, {
-            headers: authHeader(),
-        });
+        const res = await httpRequestPrivate.get(`classes/${id}`);
         return res;
     } catch ({ response }) {
         return response;
@@ -41,10 +31,7 @@ export const getByID = async (id) => {
 };
 export const del = async (id) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.del(`classes/${id}`, {
-            headers: authHeader(),
-        });
+        const res = await httpRequestPrivate.del(`classes/${id}`);
         return res;
     } catch ({ response }) {
         return response;
@@ -52,14 +39,12 @@ export const del = async (id) => {
 };
 export const search = async (q, page, pagesize) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.get('classes/search', {
+        const res = await httpRequestPrivate.get('classes/search', {
             params: {
                 q,
                 page,
                 pagesize,
             },
-            headers: authHeader(),
         });
         return res;
     } catch ({ response }) {
@@ -68,16 +53,9 @@ export const search = async (q, page, pagesize) => {
 };
 export const post = async (params = {}) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.post(
-            'classes',
-            {
-                ...params,
-            },
-            {
-                headers: authHeader(),
-            },
-        );
+        const res = await httpRequestPrivate.post('classes', {
+            ...params,
+        });
         return res;
     } catch ({ response }) {
         return response;
@@ -85,16 +63,9 @@ export const post = async (params = {}) => {
 };
 export const put = async (id, params = {}) => {
     try {
-        await refreshTokenService();
-        const res = await httpRequest.put(
-            `classes/${id}`,
-            {
-                ...params,
-            },
-            {
-                headers: authHeader(),
-            },
-        );
+        const res = await httpRequestPrivate.put(`classes/${id}`, {
+            ...params,
+        });
         return res;
     } catch ({ response }) {
         return response;
